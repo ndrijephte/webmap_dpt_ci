@@ -1,0 +1,177 @@
+// Initialisation
+var map = L.map("map").setView([7.5468545, -5.5470995], 9);
+
+// Fond de carte par défaut
+var osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  maxZoom: 19,
+  attribution: "&copy; OpenStreetMap contributors",
+});
+
+// Autres fonds de carte
+var Stadia_AlidadeSmoothDark = L.tileLayer(
+  "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png",
+  {
+    maxZoom: 20,
+    attribution:
+      "&copy; Stadia Maps, OpenMapTiles & OpenStreetMap contributors",
+  },
+).addTo(map);
+var OpenStreetMap_Mapnik = L.tileLayer(
+  "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+);
+var Thunderforest_OpenCycleMap = L.tileLayer(
+  "https://{s}.tile.thunderforest.com/cycle/{z}/{x}/{y}.png?apikey=<YOUR_API_KEY>",
+  {
+    maxZoom: 22,
+    attribution: "&copy; Thunderforest & OpenStreetMap contributors",
+  },
+);
+
+// Fonds de carte
+var baseLayers = {
+  OpenStreetMap: osm,
+  Mapnik: OpenStreetMap_Mapnik,
+  "Stadia Dark": Stadia_AlidadeSmoothDark,
+  "Thunderforest Cycle": Thunderforest_OpenCycleMap,
+};
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+// Création de groupes
+var groupeLimite = L.layerGroup();
+var groupeDepartements = L.layerGroup();
+
+// Création du contrôleur de couches
+var layerControl = L.control
+  .layers(
+    baseLayers,
+    {
+      Limite: groupeLimite,
+      Département: groupeDepartements,
+    },
+    {
+      collapsed: true, // l’utilisateur peut le ranger
+    },
+  )
+  .addTo(map);
+
+// 1) Définition des classes de couleurs
+const classesPopulation = [
+  { min: 0, max: 300000, color: "#edf8fb", label: "< 300 000" },
+  { min: 300000, max: 600000, color: "#abdda4", label: "300 000 – 600 000" },
+  { min: 600000, max: 900000, color: "#ffffbf", label: "600 000 – 900 000" },
+  { min: 900000, max: 1200000, color: "#fdae61", label: "900 000 – 1 200 000" },
+  { min: 1200000, max: Infinity, color: "#d7191c", label: "> 1 200 000" },
+];
+
+// 2) Création de la fonction couleur
+function getColor(pop) {
+  return classesPopulation.find((c) => pop >= c.min && pop < c.max).color;
+}
+
+// Limites de la Côte d'Ivoire
+function wfsMapLayerLimit() {
+  fetch(
+    "http://localhost:8080/geoserver/ci_map/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ci_map%3Alimite_ci&outputFormat=application%2Fjson&maxFeatures=1",
+  )
+    .then((res) => res.json())
+    .then((data) => {
+      const limitLayer = L.geoJSON(data, {
+        style: {
+          color: "#000000",
+          weight: 3,
+        },
+      });
+
+      groupeLimite.addLayer(limitLayer);
+    });
+}
+
+function wfsMapLayerDepartements() {
+  fetch(
+    "http://localhost:8080/geoserver/ci_map/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ci_map%3Adpt_ci&outputFormat=application%2Fjson&maxFeatures=108",
+  )
+    .then((res) => res.json())
+    .then((data) => {
+      const departementsLayer = L.geoJSON(data, {
+        style: (feature) => ({
+          fillColor: getColor(feature.properties.population),
+          color: "#555",
+          weight: 1,
+          fillOpacity: 1,
+        }),
+
+        // style: function (feature) {
+        //   const pop = feature.properties.population;
+
+        //   return {
+        //     fillColor:
+        //       pop < 300000
+        //         ? "#edf8fb"
+        //         : pop < 600000
+        //           ? "#abdda4"
+        //           : pop < 900000
+        //             ? "#ffffbf"
+        //             : pop < 1200000
+        //               ? "#fdae61"
+        //               : "#d7191c",
+        //     color: "#444",
+        //     weight: 1,
+        //     fillOpacity: 1,
+        //   };
+        // },
+
+        onEachFeature: function (feature, layer) {
+          layer.bindPopup(`
+            <b>Département :</b> ${feature.properties.departement}<br>
+            <b>Région :</b> ${feature.properties.region}<br>
+            <b>Superficie :</b> ${feature.properties.superficie} ha
+            `);
+
+          // DYNAMIQUE AU CLIC
+          // layer.on("click", function () {
+          //   elementTest.textContent = feature.properties.departement;
+          // });
+        },
+      });
+
+      groupeDepartements.addLayer(departementsLayer);
+      map.fitBounds(departementsLayer.getBounds());
+    })
+    .catch((err) => console.error("Erreur WFS :", err));
+}
+
+// Appel des fonctions
+wfsMapLayerLimit();
+wfsMapLayerDepartements();
+
+// Ajout de couche de contrôle
+new L.Control.Geocoder().addTo(map);
+
+// 3) Création la légende Leaflet
+const legend = L.control({ position: "bottomright" });
+
+legend.onAdd = function () {
+  const div = L.DomUtil.create("div", "legend");
+
+  div.innerHTML = "<h4>Population</h4>";
+
+  classesPopulation.forEach((c) => {
+    div.innerHTML += `
+      <div>
+        <span style="
+          background:${c.color};
+          width:18px;
+          height:18px;
+          display:inline-block;
+          margin-right:8px;
+        "></span>
+        ${c.label}
+      </div>
+    `;
+  });
+
+  return div;
+};
+
+legend.addTo(map);

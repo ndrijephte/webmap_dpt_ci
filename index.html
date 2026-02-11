@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      2KPI - la révolution en matière de formation en géomatique, urbanisme
+      numérique et solutions territoriales innovantes.
+    </title>
+    <meta
+      name="description"
+      content="2KPI est une structure spécialisée dans la formation en géomatique, urbanisme numérique et solutions territoriales innovantes."
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"
+    />
+
+    <link rel="shortcut icon" href="./assets/img/logo2kpi.png" />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+    />
+
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+
+  <body>
+    <nav id="nav">
+      <div class="logo-container">
+        <img src="./assets/img/logo2kpi.png" title="2KPI" alt="Logo 2KPI" />
+      </div>
+
+      <ul>
+        <li id="home">accueil</li>
+        <li>formations</li>
+        <li>2kpi academy</li>
+        <li>contact</li>
+      </ul>
+    </nav>
+
+    <!-- <section class="map-display"> -->
+    <!-- <div class="map-title">
+      <h1>
+        connaissance<span class="dot">.</span> planification<span class="dot"
+          >.</span
+        >
+        innovation<span class="dot">.</span>
+      </h1>
+    </div> -->
+
+    <!-- Affichage de la carte interactive -->
+    <div id="map"></div>
+
+    <!-- </section> -->
+    <div class="dream-container">
+      <p>
+        <em
+          >Imaginez un cadre où l’on apprend en faisant, où la donnée devient
+          intelligence et où la formation ouvre la voie aux territoires de
+          demain : 2KPI.</em
+        >
+      </p>
+    </div>
+    <!-- 
+    <section class="formation-container">
+      <h2>nos domaines de formations</h2>
+      <div class="btn-container">
+        <button class="formation tel-sig">
+          <img src="./assets/img/orbite.png" alt="Orbite" />
+          <span>Télédétection - SIG & Cartographie</span>
+        </button>
+
+        <button class="formation web-sig">
+          <img
+            src="./assets/img/creation-de-sites-web.png"
+            alt="Création de site web"
+          />
+          <span>Cartographie interactive - WebSIG</span>
+        </button>
+
+        <button class="formation paysage">
+          <img src="./assets/img/paysage.png" alt="Paysage" />
+          <span>Aménagement paysager & SIG</span>
+        </button>
+
+        <button class="formation data-collect">
+          <img
+            src="./assets/img/la-technologie.png"
+            alt="Collecte de données"
+          />
+          <span>Collecte de données terrain</span>
+        </button>
+
+        <button class="formation urba">
+          <img src="./assets/img/paysage-urbain.png" alt="Paysage urbain" />
+          <span>Urbanisme numérique</span>
+        </button>
+
+        <button class="formation autre">
+          <img
+            src="./assets/img/autre_formations.png"
+            alt="Autres formations"
+          />
+          <span>Autres formations</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="who-are-us">
+      <div class="img-who-ara-us">
+        <img src="./assets/img/qui_sommes_nous.jpg" alt="Qui sommes-nous" />
+      </div>
+      <div class="who-are-us-container">
+        <h2>qui sommes-nous <i class="fa-solid fa-circle-question"></i></h2>
+        <p>
+          2KPI est une structure née de la volonté de mettre la connaissance, la
+          donnée et l’<strong>innovation numérique</strong> au service du
+          développement territorial. <br />
+          Nous intervenons ...
+        </p>
+        <button>en savoir plus</button>
+      </div>
+    </section>
+
+    <section class="why-us">
+      <div class="why-us-container">
+        <h2>
+          pourquoi choisir 2kpi <i class="fa-solid fa-circle-question"></i>
+        </h2>
+        <ul>
+          <li>Approche 70 % pratique</li>
+          <li>Cas réels et données locales</li>
+          <li>Formateurs experts terrain</li>
+          <li>Outils numériques modernes</li>
+        </ul>
+        <button>en savoir plus</button>
+      </div>
+
+      <div class="who-us">
+        <img src="./assets/img/choisir2kpi.png" alt="Qui sommes-nous" />
+      </div>
+    </section>
+
+    <section class="experts-container">
+      <h2>nos formateurs</h2>
+      <p>
+        Une équipe de formateurs experts, animée par l’exigence de qualité et la
+        volonté d’intégrer durablement le savoir transmis dans les pratiques
+        professionnelles des apprenants.
+      </p>
+      <div class="experts-description-container">
+        <div class="expertise geomatic">
+          <div class="img-expertise">
+            <img src="./assets/img/geomaticien.jpg" alt="Géomaticien" />
+          </div>
+          <h3>géomaticien</h3>
+          <p>
+            Expert en géographie et informatique, spécialisé en SIG,
+            télédétection et traitement d’images satellitaires. Il transforme
+            les données géospatiales en outils d’aide à la décision pour un
+            aménagement territorial intelligent et durable.
+          </p>
+        </div>
+
+        <div class="expertise urbanist">
+          <div class="img-expertise">
+            <img src="./assets/img/urnanisme.jpg" alt="Urbaniste" />
+          </div>
+          <h3>urbaniste</h3>
+          <p>
+            Spécialiste de la planification urbaine et territoriale, il conçoit
+            des espaces fonctionnels et durables en intégrant données spatiales,
+            enjeux sociaux et outils numériques.
+          </p>
+        </div>
+
+        <div class="expertise paysagist">
+          <div class="img-expertise">
+            <img src="./assets/img/paysagisme.jpg" alt="Paysagiste" />
+          </div>
+          <h3>paysagiste</h3>
+          <p>
+            Concepteur d’espaces paysagers durables, il valorise les territoires
+            à travers des projets intégrant environnement, esthétique et analyse
+            spatiale.
+          </p>
+        </div>
+
+        <div class="expertise demographer">
+          <div class="img-expertise">
+            <img src="./assets/img/demographie.jpg" alt="Démographe" />
+          </div>
+          <h3>démographe</h3>
+          <p>
+            Expert de l’analyse des dynamiques de population, il éclaire les
+            politiques publiques et l’aménagement du territoire grâce à des
+            données démographiques et spatiales fiables.
+          </p>
+        </div>
+      </div>
+    </section>
+    <section class="contact-us">
+      <div>
+        <h2>Contact</h2>
+        <p><i class="fa-solid fa-envelope"></i> contacts@2kpinnov.org</p>
+        <p>
+          <i class="fa-solid fa-phone-flip"></i> (+225) 07 49 30 5943 / 07 78 62
+          7437
+        </p>
+      </div>
+
+      <form action="">
+        <input type="email" id="email" placeholder="Votre adresse e-mail" />
+        <br />
+
+        <input type="text" id="objet" placeholder="Objet" /> <br />
+
+        <textarea
+          placeholder="Bonjour, écrivez-vous ici ..."
+          cols="20"
+          rows="5"
+        ></textarea>
+        <br />
+
+        <input type="submit" value="soumettre" />
+      </form>
+    </section> -->
+
+    <footer>
+      <div class="last-info">
+        <div class="last-logo">
+          <a href="#home"
+            ><img src="./assets/img/logo2kpi.png" alt="logo de 2KPI "
+          /></a>
+          <p>
+            « Développer des compétences numériques pour des territoires plus
+            intelligents. »
+          </p>
+        </div>
+
+        <div class="resume-site">
+          <h2>besoin d'aide</h2>
+          <ul>
+            <li><a href="" target="_blank">accueil</a></li>
+            <li><a href="" target="_blank">à propos</a></li>
+            <li><a href="" target="_blank">nos formations</a></li>
+            <li><a href="" target="_blank">2kpi academy</a></li>
+          </ul>
+        </div>
+
+        <div class="resume-contact">
+          <h2>contactez-nous</h2>
+          <h3>Abidjan, Côte d'Ivoire</h3>
+          <p>
+            <i class="fa-solid fa-envelope"></i
+            ><a href="mailto:contacts@2kpinnov.org">contacts@2kpinnov.org</a>
+          </p>
+          <p><i class="fa-solid fa-phone-flip"></i>+225 07 49 30 5943</p>
+          <div class="social-network">
+            <h3>Suivez-nous</h3>
+            <ul>
+              <li>
+                <a href=""><i class="fa-brands fa-whatsapp"></i></a>
+              </li>
+              <li>
+                <a href=""><i class="fa-brands fa-youtube"></i></a>
+              </li>
+              <li>
+                <a href=""><i class="fa-brands fa-linkedin-in"></i></a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="copyright">
+        <p>Copyright 2026 - 2KPI | Tous droits réservés.</p>
+        <a href="#nav"><i class="fa-solid fa-circle-arrow-up"></i></a>
+      </div>
+    </footer>
+
+    <!-- Lien js -->
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+
+    <script src="https://unpkg.com/leaflet-providers@latest/leaflet-providers.js"></script>
+
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+    <!--Connexion javascript-->
+    <script src="index.js"></script>
+  </body>
+</html>
