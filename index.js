@@ -1,3 +1,6 @@
+const infoPanel = document.getElementById("info-panel");
+console.log(infoPanel);
+
 // Initialisation
 var map = L.map("map").setView([7.5468545, -5.5470995], 9);
 
@@ -87,51 +90,69 @@ function wfsMapLayerLimit() {
     });
 }
 
+// %%%%%%%% STYLE AU DEPLACEMENT SUR UN DPT DONNES %%%%%%%%%%%
+// style normal
+function styleDepartements(feature) {
+  return {
+    fill: true,
+    fillColor: getColor(feature.properties.population),
+    weight: 1,
+    color: "#555",
+    fillOpacity: 1,
+  };
+}
+
+// style au survol
+function highlightFeature(e) {
+  const layer = e.target;
+
+  layer.setStyle({
+    fillColor: "#b4e9fd", // visible
+    fillOpacity: 1,
+    // color: "#000000",
+    // weight: 1,
+  });
+
+  layer.bringToFront();
+}
+
+// retour au style initial
+function resetHighlight(e) {
+  departementsLayer.resetStyle(e.target);
+}
+
+let departementsLayer;
+// const titre = document.querySelector("h1");
+
+// Département de la Côte d'Ivoire
 function wfsMapLayerDepartements() {
   fetch(
     "http://localhost:8080/geoserver/ci_map/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ci_map%3Adpt_ci&outputFormat=application%2Fjson&maxFeatures=108",
   )
     .then((res) => res.json())
     .then((data) => {
-      const departementsLayer = L.geoJSON(data, {
-        style: (feature) => ({
-          fillColor: getColor(feature.properties.population),
-          color: "#555",
-          weight: 1,
-          fillOpacity: 1,
-        }),
-
-        // style: function (feature) {
-        //   const pop = feature.properties.population;
-
-        //   return {
-        //     fillColor:
-        //       pop < 300000
-        //         ? "#edf8fb"
-        //         : pop < 600000
-        //           ? "#abdda4"
-        //           : pop < 900000
-        //             ? "#ffffbf"
-        //             : pop < 1200000
-        //               ? "#fdae61"
-        //               : "#d7191c",
-        //     color: "#444",
-        //     weight: 1,
-        //     fillOpacity: 1,
-        //   };
-        // },
+      departementsLayer = L.geoJSON(data, {
+        style: styleDepartements,
 
         onEachFeature: function (feature, layer) {
-          layer.bindPopup(`
-            <b>Département :</b> ${feature.properties.departement}<br>
-            <b>Région :</b> ${feature.properties.region}<br>
-            <b>Superficie :</b> ${feature.properties.superficie} ha
-            `);
-
-          // DYNAMIQUE AU CLIC
-          // layer.on("click", function () {
-          //   elementTest.textContent = feature.properties.departement;
-          // });
+          layer.on({
+            mouseover: function (e) {
+              highlightFeature(e);
+              updateInfo(feature);
+            },
+            mouseout: function (e) {
+              resetHighlight(e);
+              infoPanel.innerHTML = `
+      <h2>Informations</h2>
+      <p>Survolez un département</p>
+    `;
+            },
+          });
+          // Poppup
+          // layer.bindPopup(`
+          //   <b>Département :</b> ${feature.properties.departement}<br>
+          //   <b>Population :</b> ${(feature.properties.population || 0).toLocaleString()}
+          // `);
         },
       });
 
@@ -175,3 +196,16 @@ legend.onAdd = function () {
 };
 
 legend.addTo(map);
+
+// Mettre à jour les panneaux / Création du résumé des informations
+function updateInfo(feature) {
+  const props = feature.properties;
+
+  infoPanel.innerHTML = `
+    <h2>${props.departement}</h2>
+    <p><b>Région :</b> ${props.region}</p>
+    <p><b>Population :</b> ${(props.population || 0).toLocaleString()}</p>
+    <p><b>Superficie :</b> ${(props.superficie * 0.0001).toFixed(3) || "N/A"} km²</p>
+    <p><b>Densité :</b> ${(props.population / props.superficie).toFixed(3) || "N/A"} hbts/km²</p>
+  `;
+}

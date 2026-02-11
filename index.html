@@ -48,18 +48,14 @@
       </ul>
     </nav>
 
-    <!-- <section class="map-display"> -->
-    <!-- <div class="map-title">
-      <h1>
-        connaissance<span class="dot">.</span> planification<span class="dot"
-          >.</span
-        >
-        innovation<span class="dot">.</span>
-      </h1>
-    </div> -->
-
     <!-- Affichage de la carte interactive -->
     <div id="map"></div>
+
+    <!-- Résumé des informations -->
+    <div id="info-panel" class="info-panel">
+      <h2>Informations</h2>
+      <p>Survolez un département</p>
+    </div>
 
     <!-- </section> -->
     <div class="dream-container">
@@ -71,170 +67,6 @@
         >
       </p>
     </div>
-    <!-- 
-    <section class="formation-container">
-      <h2>nos domaines de formations</h2>
-      <div class="btn-container">
-        <button class="formation tel-sig">
-          <img src="./assets/img/orbite.png" alt="Orbite" />
-          <span>Télédétection - SIG & Cartographie</span>
-        </button>
-
-        <button class="formation web-sig">
-          <img
-            src="./assets/img/creation-de-sites-web.png"
-            alt="Création de site web"
-          />
-          <span>Cartographie interactive - WebSIG</span>
-        </button>
-
-        <button class="formation paysage">
-          <img src="./assets/img/paysage.png" alt="Paysage" />
-          <span>Aménagement paysager & SIG</span>
-        </button>
-
-        <button class="formation data-collect">
-          <img
-            src="./assets/img/la-technologie.png"
-            alt="Collecte de données"
-          />
-          <span>Collecte de données terrain</span>
-        </button>
-
-        <button class="formation urba">
-          <img src="./assets/img/paysage-urbain.png" alt="Paysage urbain" />
-          <span>Urbanisme numérique</span>
-        </button>
-
-        <button class="formation autre">
-          <img
-            src="./assets/img/autre_formations.png"
-            alt="Autres formations"
-          />
-          <span>Autres formations</span>
-        </button>
-      </div>
-    </section>
-
-    <section class="who-are-us">
-      <div class="img-who-ara-us">
-        <img src="./assets/img/qui_sommes_nous.jpg" alt="Qui sommes-nous" />
-      </div>
-      <div class="who-are-us-container">
-        <h2>qui sommes-nous <i class="fa-solid fa-circle-question"></i></h2>
-        <p>
-          2KPI est une structure née de la volonté de mettre la connaissance, la
-          donnée et l’<strong>innovation numérique</strong> au service du
-          développement territorial. <br />
-          Nous intervenons ...
-        </p>
-        <button>en savoir plus</button>
-      </div>
-    </section>
-
-    <section class="why-us">
-      <div class="why-us-container">
-        <h2>
-          pourquoi choisir 2kpi <i class="fa-solid fa-circle-question"></i>
-        </h2>
-        <ul>
-          <li>Approche 70 % pratique</li>
-          <li>Cas réels et données locales</li>
-          <li>Formateurs experts terrain</li>
-          <li>Outils numériques modernes</li>
-        </ul>
-        <button>en savoir plus</button>
-      </div>
-
-      <div class="who-us">
-        <img src="./assets/img/choisir2kpi.png" alt="Qui sommes-nous" />
-      </div>
-    </section>
-
-    <section class="experts-container">
-      <h2>nos formateurs</h2>
-      <p>
-        Une équipe de formateurs experts, animée par l’exigence de qualité et la
-        volonté d’intégrer durablement le savoir transmis dans les pratiques
-        professionnelles des apprenants.
-      </p>
-      <div class="experts-description-container">
-        <div class="expertise geomatic">
-          <div class="img-expertise">
-            <img src="./assets/img/geomaticien.jpg" alt="Géomaticien" />
-          </div>
-          <h3>géomaticien</h3>
-          <p>
-            Expert en géographie et informatique, spécialisé en SIG,
-            télédétection et traitement d’images satellitaires. Il transforme
-            les données géospatiales en outils d’aide à la décision pour un
-            aménagement territorial intelligent et durable.
-          </p>
-        </div>
-
-        <div class="expertise urbanist">
-          <div class="img-expertise">
-            <img src="./assets/img/urnanisme.jpg" alt="Urbaniste" />
-          </div>
-          <h3>urbaniste</h3>
-          <p>
-            Spécialiste de la planification urbaine et territoriale, il conçoit
-            des espaces fonctionnels et durables en intégrant données spatiales,
-            enjeux sociaux et outils numériques.
-          </p>
-        </div>
-
-        <div class="expertise paysagist">
-          <div class="img-expertise">
-            <img src="./assets/img/paysagisme.jpg" alt="Paysagiste" />
-          </div>
-          <h3>paysagiste</h3>
-          <p>
-            Concepteur d’espaces paysagers durables, il valorise les territoires
-            à travers des projets intégrant environnement, esthétique et analyse
-            spatiale.
-          </p>
-        </div>
-
-        <div class="expertise demographer">
-          <div class="img-expertise">
-            <img src="./assets/img/demographie.jpg" alt="Démographe" />
-          </div>
-          <h3>démographe</h3>
-          <p>
-            Expert de l’analyse des dynamiques de population, il éclaire les
-            politiques publiques et l’aménagement du territoire grâce à des
-            données démographiques et spatiales fiables.
-          </p>
-        </div>
-      </div>
-    </section>
-    <section class="contact-us">
-      <div>
-        <h2>Contact</h2>
-        <p><i class="fa-solid fa-envelope"></i> contacts@2kpinnov.org</p>
-        <p>
-          <i class="fa-solid fa-phone-flip"></i> (+225) 07 49 30 5943 / 07 78 62
-          7437
-        </p>
-      </div>
-
-      <form action="">
-        <input type="email" id="email" placeholder="Votre adresse e-mail" />
-        <br />
-
-        <input type="text" id="objet" placeholder="Objet" /> <br />
-
-        <textarea
-          placeholder="Bonjour, écrivez-vous ici ..."
-          cols="20"
-          rows="5"
-        ></textarea>
-        <br />
-
-        <input type="submit" value="soumettre" />
-      </form>
-    </section> -->
 
     <footer>
       <div class="last-info">

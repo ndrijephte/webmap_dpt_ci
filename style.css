@@ -318,3 +318,27 @@ footer a:hover {
   font-size: 14px;
   text-align: center;
 }
+
+/* Résumé des informations */
+.info-panel {
+  position: absolute;
+  top: 150px;
+  left: 20px;
+  width: 260px;
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  font-family: Jost, Montserrat, sans-serif;
+}
+
+.info-panel h2 {
+  margin-top: 0;
+  font-size: 16px;
+}
+
+.info-panel p {
+  margin: 5px 0;
+  font-size: 14px;
+}
