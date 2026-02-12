@@ -45,18 +45,84 @@ var groupeLimite = L.layerGroup();
 var groupeDepartements = L.layerGroup();
 
 // Création du contrôleur de couches
-var layerControl = L.control
-  .layers(
-    baseLayers,
-    {
-      Limite: groupeLimite,
-      Département: groupeDepartements,
-    },
-    {
-      collapsed: true, // l’utilisateur peut le ranger
-    },
-  )
-  .addTo(map);
+// var layerControl = L.control
+//   .layers(
+//     baseLayers,
+//     {
+//       Limite: groupeLimite,
+//       Département: groupeDepartements,
+//     },
+//     {
+//       collapsed: true, l’utilisateur peut le ranger
+//     },
+//   )
+//   .addTo(map);
+
+// %%%%%%%%% POUR GENERER DYNAMIQUEMENT LES LISTES %%%%%%
+function buildLayerPanel() {
+  const basemapList = document.getElementById("basemap-list");
+  const overlayList = document.getElementById("overlay-list");
+
+  // --- FONDS DE CARTE (radio buttons) ---
+  Object.entries(baseLayers).forEach(([name, layer], index) => {
+    const id = "basemap-" + index;
+
+    const label = document.createElement("label");
+
+    label.innerHTML = `
+      <input type="radio" name="basemap" id="${id}">
+      ${name}
+    `;
+
+    basemapList.appendChild(label);
+
+    label.querySelector("input").addEventListener("change", () => {
+      // enlever tous les fonds
+      Object.values(baseLayers).forEach((l) => map.removeLayer(l));
+
+      map.addLayer(layer);
+    });
+  });
+
+  // --- COUCHES (checkboxes) ---
+  const overlays = {
+    Limite: groupeLimite,
+    Départements: groupeDepartements,
+  };
+
+  Object.entries(overlays).forEach(([name, layer], index) => {
+    const id = "overlay-" + index;
+
+    const label = document.createElement("label");
+
+    label.innerHTML = `
+      <input type="checkbox" id="${id}" checked>
+      ${name}
+    `;
+
+    overlayList.appendChild(label);
+
+    map.addLayer(layer);
+
+    label.querySelector("input").addEventListener("change", (e) => {
+      if (e.target.checked) {
+        map.addLayer(layer);
+      } else {
+        map.removeLayer(layer);
+      }
+    });
+  });
+}
+
+// %%%%%% Activer l’ouverture / fermeture au clic %%%%%%
+document.querySelectorAll(".section-header").forEach((header) => {
+  header.addEventListener("click", () => {
+    const content = header.nextElementSibling;
+
+    content.style.display =
+      content.style.display === "block" ? "none" : "block";
+  });
+});
 
 // 1) Définition des classes de couleurs
 const classesPopulation = [
@@ -165,6 +231,7 @@ function wfsMapLayerDepartements() {
 // Appel des fonctions
 wfsMapLayerLimit();
 wfsMapLayerDepartements();
+buildLayerPanel();
 
 // Ajout de couche de contrôle
 new L.Control.Geocoder().addTo(map);
