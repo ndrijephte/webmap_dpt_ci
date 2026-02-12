@@ -52,17 +52,23 @@
     <div id="map"></div>
 
     <!-- Création de panneau personnalisé pour controler les couches -->
-    <div id="layer-panel" class="layer-panel">
-      <div class="section">
-        <div class="section-header">Fonds de carte</div>
-        <div class="section-content" id="basemap-list"></div>
+    <div id="layer-manager" class="layer-manager">
+      <div class="manager-header">
+        <span>Gestionnaire</span>
       </div>
 
-      <div class="section">
-        <div class="section-header">Couches</div>
-        <div class="section-content" id="overlay-list"></div>
-      </div>
+      <ul class="manager-tabs">
+        <li class="tab active" data-tab="overlays">Couches</li>
+        <li class="tab" data-tab="basemaps">Fonds</li>
+      </ul>
+
+      <div id="manager-content" class="manager-content"></div>
     </div>
+
+    <!-- BOUTON TOGGLE FLOTTANT -->
+    <button id="manager-toggle" class="manager-toggle">
+      <i class="fa-solid fa-bars"></i>
+    </button>
 
     <!-- Résumé des informations -->
     <div id="info-panel" class="info-panel">

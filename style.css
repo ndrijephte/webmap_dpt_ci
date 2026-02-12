@@ -19,6 +19,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-family: Jost, Montserrat, sans-serif;
 }
 
 /* body {
@@ -273,17 +274,6 @@ footer a:hover {
 .social-network h3 {
   margin-bottom: 5px;
 }
-/* .social-network li:hover {
-  display: flex;
-  justify-content: center;
-  align-items: center; 
-  padding: 10px;
-  width: 35px;
-  height: 35px;
-  border-radius: 250px;
-  background: var(--color1);
-  transition: 0.5s ease;
-} */
 
 .social-network i:hover {
   color: var(--color2);
@@ -320,35 +310,122 @@ footer a:hover {
 }
 
 /* Configuration du panneau des couches */
-.layer-panel {
+.layer-manager {
   position: absolute;
+  font-size: 0.7rem;
   top: 100px;
   right: 20px;
-  width: 250px;
+  width: 260px;
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  border-radius: 14px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateX(0);
   z-index: 1000;
-  font-family: Jost, Montserrat, Arial, sans-serif;
 }
 
-.section-header {
-  padding: 10px;
-  background: #2c3e50;
+/* Collapse state */
+.layer-manager.collapsed {
+  width: 60px;
+  transform: translateX(220px);
+}
+
+/* Header */
+.manager-header {
+  background: #1f4e79;
   color: white;
-  cursor: pointer;
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   font-weight: bold;
-}
-
-.section-content {
-  padding: 10px;
-  display: none; /* caché par défaut */
-}
-
-.section-content label {
-  display: block;
-  margin-bottom: 6px;
   cursor: pointer;
+}
+
+/* Tabs */
+.manager-tabs {
+  list-style: none;
+  display: flex;
+  margin: 0;
+  padding: 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.manager-tabs li {
+  flex: 1;
+  text-align: center;
+  padding: 10px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.manager-tabs li.active {
+  background: #f0f4f8;
+  border-bottom: 3px solid #1f4e79;
+}
+
+/* Content */
+.manager-content {
+  padding: 12px;
+}
+
+.manager-content label {
+  display: block;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+/* Masquer contenu quand collapsed */
+.layer-manager.collapsed .manager-tabs,
+.layer-manager.collapsed .manager-content {
+  display: none;
+}
+
+/* Bouton toggle flottant */
+.manager-toggle {
+  position: absolute;
+  top: 110px;
+  right: 20px;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  border: none;
+  background: #1f4e79;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+  z-index: 1100;
+  transition: all 0.3s ease;
+}
+
+.manager-toggle:hover {
+  transform: scale(1.1);
+}
+
+/* Quand panneau ouvert → déplacer bouton */
+.layer-manager:not(.collapsed) + .manager-toggle {
+  right: 290px;
+}
+
+.symbol {
+  display: inline-block;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.symbol.line {
+  width: 18px;
+  height: 3px;
+  background: black;
+}
+
+.symbol.polygon {
+  width: 16px;
+  height: 12px;
+  background: #fdae61;
+  border: 1px solid #555;
 }
 
 /* Résumé des informations */
@@ -373,4 +450,78 @@ footer a:hover {
 .info-panel p {
   margin: 5px 0;
   font-size: 14px;
+}
+
+/* Paramétrage des baseMaps en miniature */
+
+/* Grille : 2 colonnes égales */
+.basemap-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  padding: 10px;
+}
+
+.basemap-item {
+  position: relative; /* IMPORTANT pour placer le symbole par-dessus */
+  width: 100%;
+}
+
+.basemap-item input {
+  display: none; /* Cache le bouton radio par défaut */
+}
+
+.basemap-item label {
+  display: block;
+  width: 100%;
+  cursor: pointer;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid #ddd;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+/* L'image prend TOUTE la largeur disponible */
+.basemap-item img {
+  width: 100%; /* Occupe 100% du parent (le label) */
+  height: 80px; /* Hauteur fixe pour l'harmonie */
+  object-fit: cover; /* Évite de déformer l'image */
+  display: block;
+}
+
+.basemap-item span {
+  display: block;
+  font-size: 0.5rem;
+  text-align: center;
+  padding: 5px 0;
+  font-weight: 500;
+}
+
+/* --- LE SYMBOLE DE VALIDATION --- */
+
+/* On utilise ::after pour créer le rond de validation */
+.basemap-item input:checked + label::after {
+  content: "✓"; /* Le symbole */
+  position: absolute; /* Positionnement libre */
+  top: 8px; /* 8px du haut */
+  right: 8px; /* 8px de la droite */
+  background: #1f4e79; /* Ton bleu */
+  color: white;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%; /* Cercle parfait */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  z-index: 10; /* Toujours au-dessus de l'image */
+}
+
+/* Changement de bordure quand c'est sélectionné */
+.basemap-item input:checked + label {
+  border-color: #1f4e79;
+  box-shadow: 0 0 8px rgba(31, 78, 121, 0.4);
 }

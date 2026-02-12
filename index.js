@@ -4,13 +4,15 @@ console.log(infoPanel);
 // Initialisation
 var map = L.map("map").setView([7.5468545, -5.5470995], 9);
 
-// Fond de carte par défaut
+// ------------------------------------------------------
+// %%%%%%%% Fond de carte par défaut %%%%%%%%%%
+// 1/ OpenStreetMap
 var osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom: 19,
   attribution: "&copy; OpenStreetMap contributors",
 });
 
-// Autres fonds de carte
+// 2/ Stadia_AlidadeSmoothDark
 var Stadia_AlidadeSmoothDark = L.tileLayer(
   "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png",
   {
@@ -18,25 +20,85 @@ var Stadia_AlidadeSmoothDark = L.tileLayer(
     attribution:
       "&copy; Stadia Maps, OpenMapTiles & OpenStreetMap contributors",
   },
-).addTo(map);
-var OpenStreetMap_Mapnik = L.tileLayer(
-  "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
 );
-var Thunderforest_OpenCycleMap = L.tileLayer(
-  "https://{s}.tile.thunderforest.com/cycle/{z}/{x}/{y}.png?apikey=<YOUR_API_KEY>",
+
+// 3/ Stadia_AlidadeSatellite
+var Stadia_AlidadeSatellite = L.tileLayer(
+  "https://tiles.stadiamaps.com/tiles/alidade_satellite/{z}/{x}/{y}{r}.{ext}",
   {
-    maxZoom: 22,
-    attribution: "&copy; Thunderforest & OpenStreetMap contributors",
+    minZoom: 0,
+    maxZoom: 20,
+    attribution:
+      '&copy; CNES, Distribution Airbus DS, © Airbus DS, © PlanetObserver (Contains Copernicus Data) | &copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    ext: "jpg",
   },
 );
 
-// Fonds de carte
-var baseLayers = {
-  OpenStreetMap: osm,
-  Mapnik: OpenStreetMap_Mapnik,
-  "Stadia Dark": Stadia_AlidadeSmoothDark,
-  "Thunderforest Cycle": Thunderforest_OpenCycleMap,
+// 4/ Stadia_StamenTonerLite
+var Stadia_StamenTonerLite = L.tileLayer(
+  "https://tiles.stadiamaps.com/tiles/stamen_toner_lite/{z}/{x}/{y}{r}.{ext}",
+  {
+    minZoom: 0,
+    maxZoom: 20,
+    attribution:
+      '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    ext: "png",
+  },
+);
+
+// 5/ OpenTopo
+var OpenTopoMap = L.tileLayer(
+  "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+  {
+    maxZoom: 17,
+    attribution:
+      'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
+  },
+);
+
+// 6/ Stadia AlidadeSmooth
+var Stadia_AlidadeSmooth = L.tileLayer(
+  "https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.{ext}",
+  {
+    minZoom: 0,
+    maxZoom: 20,
+    attribution:
+      '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    ext: "png",
+  },
+).addTo(map);
+
+// %%%% Fonds de carte %%%%%
+var baseMaps = {
+  OpenStreetMap: {
+    layer: osm,
+    img: "assets/img/osm.png",
+  },
+  "Stadia Dark": {
+    layer: Stadia_AlidadeSmoothDark, // Correction ici : variable, pas "string"
+    img: "assets/img/stadia_dark.png",
+  },
+  "Stadia Satellite": {
+    layer: Stadia_AlidadeSatellite,
+    img: "assets/img/stadia_satellite.png",
+  },
+  "Stamen Toner Lite": {
+    layer: Stadia_StamenTonerLite,
+    img: "assets/img/stament_toner.png",
+  },
+  OpenTopoMap: {
+    layer: OpenTopoMap,
+    img: "assets/img/open_topo.png",
+  },
+  "Stadia Smooth": {
+    layer: Stadia_AlidadeSmooth,
+    img: "assets/img/stadia_smooth.png",
+  },
 };
+
+let currentBaseLayer = Stadia_AlidadeSmooth; // On définit la couche par défaut
+
+// ---------------------------------------------------------------------
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -44,59 +106,176 @@ var baseLayers = {
 var groupeLimite = L.layerGroup();
 var groupeDepartements = L.layerGroup();
 
-// Création du contrôleur de couches
-// var layerControl = L.control
-//   .layers(
-//     baseLayers,
-//     {
-//       Limite: groupeLimite,
-//       Département: groupeDepartements,
-//     },
-//     {
-//       collapsed: true, l’utilisateur peut le ranger
-//     },
-//   )
-//   .addTo(map);
+// Définition des overlays GLOBALE
+const overlays = {
+  Limite: {
+    layer: groupeLimite,
+    type: "line",
+  },
+  Départements: {
+    layer: groupeDepartements,
+    type: "polygon",
+  },
+};
+
+// %%%%%%%%% GENERATION DYNAMIQUE DE CONTENU %%%%%%%%%%
+const managerContent = document.getElementById("manager-content");
+
+function renderOverlays() {
+  managerContent.innerHTML = "";
+
+  Object.entries(overlays).forEach(([name, obj]) => {
+    const label = document.createElement("label");
+
+    let symbol = "";
+
+    if (obj.type === "line") {
+      symbol = `<span class="symbol line"></span>`;
+    } else if (obj.type === "polygon") {
+      symbol = `<span class="symbol polygon"></span>`;
+    }
+
+    label.innerHTML = `
+      <input type="checkbox" checked>
+      ${symbol}
+      ${name}
+    `;
+
+    managerContent.appendChild(label);
+
+    map.addLayer(obj.layer);
+
+    label.querySelector("input").addEventListener("change", (e) => {
+      if (e.target.checked) {
+        map.addLayer(obj.layer);
+      } else {
+        map.removeLayer(obj.layer);
+      }
+    });
+  });
+}
+
+// 2. CORRECTION de la fonction de rendu
+function renderBasemaps() {
+  managerContent.innerHTML = "";
+
+  const grid = document.createElement("div");
+  grid.classList.add("basemap-grid");
+
+  Object.entries(baseMaps).forEach(([name, obj], index) => {
+    const item = document.createElement("div");
+    item.classList.add("basemap-item");
+
+    // On vérifie si c'est la couche actuellement active pour cocher le radio
+    const isChecked = obj.layer === currentBaseLayer ? "checked" : "";
+
+    item.innerHTML = `
+  <input type="radio" name="basemap" id="bm-${index}" ${isChecked}>
+  <label for="bm-${index}">
+    <img src="${obj.img}" alt="${name}"> <span>${name}</span>
+  </label>
+`;
+
+    grid.appendChild(item);
+
+    const radio = item.querySelector("input");
+
+    radio.addEventListener("change", () => {
+      if (radio.checked) {
+        // Suppression de l'ancienne couche
+        if (currentBaseLayer) {
+          map.removeLayer(currentBaseLayer);
+        }
+
+        // Ajout de la nouvelle couche
+        currentBaseLayer = obj.layer;
+        map.addLayer(currentBaseLayer);
+      }
+    });
+  });
+
+  managerContent.appendChild(grid);
+}
+
+// ==========================================
+// ----------- GESTION DES ONGLETS ------------
+// ==========================================
+document.querySelectorAll(".tab").forEach((tab) => {
+  tab.addEventListener("click", () => {
+    document
+      .querySelectorAll(".tab")
+      .forEach((t) => t.classList.remove("active"));
+
+    tab.classList.add("active");
+
+    const type = tab.dataset.tab;
+
+    if (type === "overlays") {
+      renderOverlays();
+    } else {
+      renderBasemaps();
+    }
+  });
+});
+
+// GESTION  DES ONGLETS OUVERTURE / FERMETURE
+const manager = document.getElementById("layer-manager");
+const toggleBtn = document.getElementById("manager-toggle");
+const toggleIcon = toggleBtn.querySelector("i");
+
+// état initial
+manager.classList.add("collapsed");
+
+toggleBtn.addEventListener("click", () => {
+  manager.classList.toggle("collapsed");
+
+  if (manager.classList.contains("collapsed")) {
+    toggleIcon.classList.remove("fa-xmark");
+    toggleIcon.classList.add("fa-bars");
+  } else {
+    toggleIcon.classList.remove("fa-bars");
+    toggleIcon.classList.add("fa-xmark");
+  }
+});
 
 // %%%%%%%%% POUR GENERER DYNAMIQUEMENT LES LISTES %%%%%%
 function buildLayerPanel() {
-  const basemapList = document.getElementById("basemap-list");
-  const overlayList = document.getElementById("overlay-list");
+  const basemapList = document.getElementById("basemaps-control");
+  const overlayList = document.getElementById("layers-control");
 
-  // --- FONDS DE CARTE (radio buttons) ---
-  Object.entries(baseLayers).forEach(([name, layer], index) => {
-    const id = "basemap-" + index;
+  // Nettoyer avant génération
+  basemapList.innerHTML = "";
+  overlayList.innerHTML = "";
 
+  // ========================
+  // FONDS DE CARTE (radio)
+  // ========================
+  Object.entries(baseMaps).forEach(([name, layer], index) => {
     const label = document.createElement("label");
 
     label.innerHTML = `
-      <input type="radio" name="basemap" id="${id}">
+      <input type="radio" name="basemap" ${index === 0 ? "checked" : ""}>
       ${name}
     `;
 
     basemapList.appendChild(label);
 
-    label.querySelector("input").addEventListener("change", () => {
-      // enlever tous les fonds
-      Object.values(baseLayers).forEach((l) => map.removeLayer(l));
+    if (index === 0) map.addLayer(layer);
 
+    label.querySelector("input").addEventListener("change", () => {
+      Object.values(baseMaps).forEach((l) => map.removeLayer(l));
       map.addLayer(layer);
     });
   });
 
-  // --- COUCHES (checkboxes) ---
-  const overlays = {
-    Limite: groupeLimite,
-    Départements: groupeDepartements,
-  };
-
-  Object.entries(overlays).forEach(([name, layer], index) => {
-    const id = "overlay-" + index;
-
+  // ========================
+  // COUCHES (checkbox)
+  // ========================
+  Object.entries(overlays).forEach(([name, layer]) => {
     const label = document.createElement("label");
 
     label.innerHTML = `
-      <input type="checkbox" id="${id}" checked>
+      <input type="checkbox" checked>
       ${name}
     `;
 
@@ -115,15 +294,28 @@ function buildLayerPanel() {
 }
 
 // %%%%%% Activer l’ouverture / fermeture au clic %%%%%%
-document.querySelectorAll(".section-header").forEach((header) => {
+document.querySelectorAll(".control-header").forEach((header) => {
   header.addEventListener("click", () => {
     const content = header.nextElementSibling;
+    const isOpen = content.style.display === "block";
 
-    content.style.display =
-      content.style.display === "block" ? "none" : "block";
+    // Reset tout
+    document.querySelectorAll(".control-content").forEach((panel) => {
+      panel.style.display = "none";
+    });
+
+    document.querySelectorAll(".control-header").forEach((h) => {
+      h.classList.remove("active");
+    });
+
+    if (!isOpen) {
+      content.style.display = "block";
+      header.classList.add("active");
+    }
   });
 });
 
+// %%%%% CARTE CHLOROPLETE AVEC LES DONNEES DE POPULATION %%%%%%
 // 1) Définition des classes de couleurs
 const classesPopulation = [
   { min: 0, max: 300000, color: "#edf8fb", label: "< 300 000" },
@@ -228,11 +420,6 @@ function wfsMapLayerDepartements() {
     .catch((err) => console.error("Erreur WFS :", err));
 }
 
-// Appel des fonctions
-wfsMapLayerLimit();
-wfsMapLayerDepartements();
-buildLayerPanel();
-
 // Ajout de couche de contrôle
 new L.Control.Geocoder().addTo(map);
 
@@ -276,3 +463,8 @@ function updateInfo(feature) {
     <p><b>Densité :</b> ${(props.population / props.superficie).toFixed(3) || "N/A"} hbts/km²</p>
   `;
 }
+
+// %%%%%%%%%% Appel des fonctions %%%%%%%%%%%
+wfsMapLayerLimit();
+wfsMapLayerDepartements();
+renderOverlays(); // affichage par défaut
