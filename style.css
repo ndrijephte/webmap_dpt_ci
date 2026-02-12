@@ -22,17 +22,13 @@
   font-family: Jost, Montserrat, sans-serif;
 }
 
-/* body {
-  min-height: 100vh;
-} */
-
 nav {
   display: grid;
   grid-template-columns: 30% 70%;
   padding: 0 20px;
   margin: 0 auto;
-  /* background: var(--color1); */
-  background: linear-gradient(100deg, var(--color1) 15%, var(--color2) 40%);
+  background: var(--color1);
+  /* background: linear-gradient(100deg, var(--color1) 15%, var(--color2) 40%); */
   position: relative;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   z-index: 10;
@@ -55,7 +51,7 @@ nav li {
   position: relative;
   list-style: none;
   font-family: Montserrat;
-  color: var(--color1);
+  color: var(--color2);
   display: flex;
   justify-content: space-around;
   align-items: center;
@@ -295,6 +291,8 @@ footer a:hover {
 
 .legend {
   background: white;
+  bottom: 30px;
+  left: 10px;
   padding: 10px;
   font-size: 12px;
   line-height: 18px;
@@ -524,4 +522,52 @@ footer a:hover {
 .basemap-item input:checked + label {
   border-color: #1f4e79;
   box-shadow: 0 0 8px rgba(31, 78, 121, 0.4);
+}
+
+/* Filtre à partir des données de population */
+.filter-container {
+  position: absolute;
+  top: 320px; /* ajuste si besoin */
+  left: 20px;
+  width: 260px;
+
+  padding: 12px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  font-size: 0.7rem;
+}
+
+.filter-container input {
+  width: 100%;
+  margin: 5px 0;
+  padding: 4px;
+  font-size: 0.7rem;
+}
+
+.filter-container button {
+  width: 100%;
+  padding: 6px;
+  margin-top: 8px;
+  background: #1f4e79;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#reset-filter {
+  width: 100%;
+  padding: 6px;
+  margin-top: 6px;
+  background: #ccc;
+  color: #333;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#reset-filter:hover {
+  background: #bbb;
 }

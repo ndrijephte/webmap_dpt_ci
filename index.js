@@ -406,25 +406,23 @@ function wfsMapLayerDepartements() {
     `;
             },
           });
-          // Poppup
-          // layer.bindPopup(`
-          //   <b>Département :</b> ${feature.properties.departement}<br>
-          //   <b>Population :</b> ${(feature.properties.population || 0).toLocaleString()}
-          // `);
         },
       });
 
       groupeDepartements.addLayer(departementsLayer);
       map.fitBounds(departementsLayer.getBounds());
+
+      // Appliquer filtre initial si besoin
+      applyPopulationFilter(0, Infinity);
     })
     .catch((err) => console.error("Erreur WFS :", err));
 }
 
 // Ajout de couche de contrôle
-new L.Control.Geocoder().addTo(map);
+// new L.Control.Geocoder().addTo(map);
 
 // 3) Création la légende Leaflet
-const legend = L.control({ position: "bottomright" });
+const legend = L.control({ position: "bottomleft" });
 
 legend.onAdd = function () {
   const div = L.DomUtil.create("div", "legend");
@@ -462,6 +460,61 @@ function updateInfo(feature) {
     <p><b>Superficie :</b> ${(props.superficie * 0.0001).toFixed(3) || "N/A"} km²</p>
     <p><b>Densité :</b> ${(props.population / props.superficie).toFixed(3) || "N/A"} hbts/km²</p>
   `;
+}
+
+// %%%%%%%%%% POUR FILTRER A PARTIR DES DONNES DE POPULATION %%%%%%%%%
+// Appliquer le filtre
+function applySuperficieFilter(min = 0, max = Infinity) {
+  if (!departementsLayer) return; // sécurité si WFS pas encore chargé
+
+  departementsLayer.setStyle(function (feature) {
+    const sup = feature.properties.superficie;
+
+    if (sup >= min && sup <= max) {
+      return styleDepartements(feature);
+    } else {
+      return {
+        fillOpacity: 0,
+        opacity: 0,
+      };
+    }
+  });
+}
+// Réinitialiser le filtre
+document.getElementById("reset-filter").addEventListener("click", () => {
+  // Réinitialiser les champs
+  document.getElementById("sup-min").value = 0;
+
+  let maxSuperficie = 0;
+
+  departementsLayer.eachLayer((layer) => {
+    const sup = layer.feature.properties.superficie;
+    if (sup > maxSuperficie) {
+      maxSuperficie = sup;
+    }
+  });
+  document.getElementById("sup-max").value = maxSuperficie;
+
+  // Réafficher toutes les entités
+  departementsLayer.eachLayer((layer) => {
+    layer.setStyle({
+      fillOpacity: 1,
+      opacity: 1,
+    });
+  });
+});
+
+const filterBtn = document.getElementById("apply-filter");
+
+if (filterBtn) {
+  filterBtn.addEventListener("click", () => {
+    if (!departementsLayer) return;
+
+    const min = parseInt(document.getElementById("sup-min").value) || 0;
+    const max = parseInt(document.getElementById("sup-max").value) || Infinity;
+
+    applySuperficieFilter(min, max);
+  });
 }
 
 // %%%%%%%%%% Appel des fonctions %%%%%%%%%%%
