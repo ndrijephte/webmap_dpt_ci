@@ -4,6 +4,7 @@
   --color3: #f97a64;
   --color4: #fdebc9;
   --color5: rgb(47, 128, 10);
+  --primary-blue: #3498db;
 }
 
 @font-face {
@@ -331,7 +332,7 @@ footer a:hover {
 
 /* Header */
 .manager-header {
-  background: #1f4e79;
+  background: var(--color2);
   color: white;
   padding: 12px;
   display: flex;
@@ -347,7 +348,8 @@ footer a:hover {
   display: flex;
   margin: 0;
   padding: 0;
-  border-bottom: 1px solid #ddd;
+  /* border-bottom: 1px solid #ddd; */
+  border-bottom: 3px solid var(--color2);
 }
 
 .manager-tabs li {
@@ -368,8 +370,22 @@ footer a:hover {
   padding: 12px;
 }
 
+/* légère séparation entre couches et filtre */
+.manager-content hr {
+  border: none;
+  height: 1px;
+  background: #eee;
+  margin: 10px 0;
+}
+
 .manager-content label {
-  display: block;
+  /* display: block;
+  margin-bottom: 8px;
+  cursor: pointer; */
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin-bottom: 8px;
   cursor: pointer;
 }
@@ -420,10 +436,15 @@ footer a:hover {
 }
 
 .symbol.polygon {
-  width: 16px;
+  /* width: 16px;
   height: 12px;
   background: #fdae61;
-  border: 1px solid #555;
+  border: 1px solid #555; */
+
+  width: 16px;
+  height: 12px;
+  background: var(--color3);
+  border: 1px solid var(--color2);
 }
 
 /* Résumé des informations */
@@ -527,22 +548,33 @@ footer a:hover {
 /* Filtre à partir des données de population */
 /* Style du bouton "Tout afficher" */
 #reset-sup-filter {
-  width: 100%;
+  /* width: 100%;
   background: #f0f0f0;
   color: #555;
   border: 1px solid #ccc;
   padding: 8px;
   cursor: pointer;
   font-weight: 500;
-  /* L'élégance demandée */
+  border-radius: 20px;
+  transition: all 0.3s ease; */
+
+  width: 100%;
+  background: var(--color2);
+  color: var(--color1);
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  font-weight: 600;
   border-radius: 20px;
   transition: all 0.3s ease;
 }
 
 #reset-sup-filter:hover {
-  background: #e0e0e0;
+  /* background: #e0e0e0;
   border-color: #bbb;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); */
+
+  background: var(--color3);
 }
 
 /* Style des bornes du slider */
@@ -553,8 +585,86 @@ footer a:hover {
 }
 
 /* On s'assure que le conteneur de filtre est propre */
-.filter-container {
+/* .filter-container {
   padding: 15px;
   background-color: #ffffff;
   border-top: 1px solid #eee;
+} */
+
+.filter-container {
+  padding: 12px;
+  background-color: #ffffff;
+  border-top: 1px solid #eee;
+}
+
+.filter-container h4 {
+  font-size: 0.75rem;
+  margin-bottom: 10px;
+  color: var(--color2);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+#sup-range {
+  width: 100%;
+  margin: 8px 0;
+  accent-color: var(--color2);
+}
+#sup-range::-webkit-slider-thumb {
+  cursor: pointer;
+}
+
+#layer-manager input[type="checkbox"],
+#layer-manager input[type="radio"] {
+  accent-color: var(--color2);
+  cursor: pointer;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--color2);
+}
+
+/* On ne cible que les labels des COUCHES pour l'alignement horizontal */
+.overlay-item {
+  display: flex !important;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 5px;
+  cursor: pointer;
+}
+
+/* Style de la grille des fonds de carte */
+.basemap-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  padding: 10px;
+}
+
+.basemap-item {
+  text-align: center;
+  font-size: 0.85em;
+}
+
+/* Cacher le bouton radio par défaut pour un look plus moderne */
+.basemap-item input[type="radio"] {
+  display: none;
+}
+
+/* Style quand le fond de carte est sélectionné */
+.basemap-item input:checked + label img {
+  border-color: var(--primary-blue) !important;
+  box-shadow: 0 0 8px rgba(52, 152, 219, 0.5);
+}
+
+.basemap-item label {
+  cursor: pointer;
+  display: block;
+}
+
+.basemap-item span {
+  display: block;
+  margin-top: 5px;
+  color: #555;
 }

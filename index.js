@@ -1,5 +1,5 @@
 const infoPanel = document.getElementById("info-panel");
-console.log(infoPanel);
+let globalMaxSuperficie = 40000;
 
 // Initialisation
 var map = L.map("map").setView([7.5468545, -5.5470995], 9);
@@ -66,7 +66,10 @@ var Stadia_AlidadeSmooth = L.tileLayer(
       '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     ext: "png",
   },
-).addTo(map);
+);
+
+let currentBaseLayer = Stadia_AlidadeSmooth;
+map.addLayer(currentBaseLayer);
 
 // %%%% Fonds de carte %%%%%
 var baseMaps = {
@@ -95,8 +98,6 @@ var baseMaps = {
     img: "assets/img/stadia_smooth.png",
   },
 };
-
-let currentBaseLayer = Stadia_AlidadeSmooth; // On définit la couche par défaut
 
 // ---------------------------------------------------------------------
 
@@ -144,47 +145,37 @@ function createSuperficieFilter() {
   const filterDiv = document.createElement("div");
   filterDiv.classList.add("filter-container");
 
-  const maxInitial = 40000; // Valeur temporaire avant le chargement WFS
+  const maxVal = globalMaxSuperficie || 40000;
 
   filterDiv.innerHTML = `
     <h4>Filtrer par superficie</h4>
-    <div class="slider-wrapper" style="margin-bottom: 15px;">
-      <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-        <label>Superficie Max : <b id="range-value">${maxInitial}</b> ha</label>
-      </div>
-      
-      <div class="range-controls" style="display: flex; align-items: center; gap: 10px;">
-        <span class="range-bound">0</span>
-        <input type="range" id="sup-range" 
-               min="0" max="${maxInitial}" step="1" 
-               value="${maxInitial}" style="flex-grow: 1;">
-        <span class="range-bound" id="range-max-label">${maxInitial}</span>
-      </div>
+    <div style="margin-bottom: 8px;">
+      <label>Max : <b id="range-value" style="color: var(--color2);">${Math.round(maxVal)}</b> ha</label>
     </div>
-    
-    <div class="filter-actions">
-      <button id="reset-sup-filter" style="width: 100%; border-radius: 20px; padding: 8px; cursor: pointer; border: 1px solid #ccc; background: #f9f9f9;">
-        Tout afficher
-      </button>
+    <div class="range-controls" style="display: flex; align-items: center; gap: 10px;">
+      <span class="range-bound">0</span>
+      <input type="range" id="sup-range" min="0" max="${maxVal}" value="${maxVal}" style="flex-grow: 1; accent-color: var(--color2);">
+      <span class="range-bound" id="range-max-label">${Math.round(maxVal)}</span>
+    </div>
+    <div style="margin-top: 12px;">
+      <button id="reset-sup-filter" style="width:100%; cursor:pointer;">Tout afficher</button>
     </div>
   `;
 
+  // ----- LIAISON DES ÉVÉNEMENTS -----
   const slider = filterDiv.querySelector("#sup-range");
-  const display = filterDiv.querySelector("#range-value");
+  const rangeValue = filterDiv.querySelector("#range-value");
+  const resetBtn = filterDiv.querySelector("#reset-sup-filter");
 
-  // Écouteur pour le slider
-  slider.addEventListener("input", (e) => {
-    const val = parseFloat(e.target.value);
-    display.innerText = Math.round(val);
+  slider.addEventListener("input", () => {
+    const val = parseFloat(slider.value);
+    rangeValue.innerText = Math.round(val);
     applySuperficieFilter(0, val);
   });
 
-  // %%% LA CORRECTION DU BOUTON ICI %%%
-  const resetBtn = filterDiv.querySelector("#reset-sup-filter");
   resetBtn.addEventListener("click", () => {
-    const maxVal = parseFloat(slider.max);
     slider.value = maxVal;
-    display.innerText = Math.round(maxVal);
+    rangeValue.innerText = Math.round(maxVal);
     applySuperficieFilter(0, maxVal);
   });
 
@@ -192,16 +183,49 @@ function createSuperficieFilter() {
 }
 
 // %%%%%%%%% GENERATION DYNAMIQUE DE CONTENU %%%%%%%%%%
+function renderBasemaps() {
+  const managerContent = document.getElementById("manager-content");
+  managerContent.innerHTML = "";
+
+  const grid = document.createElement("div");
+  grid.classList.add("basemap-grid");
+
+  Object.entries(baseMaps).forEach(([name, obj], index) => {
+    const item = document.createElement("div");
+    item.classList.add("basemap-item");
+    const safeId = `basemap-${index}`;
+
+    item.innerHTML = `
+      <input type="radio" name="basemap" id="${safeId}" ${obj.layer === currentBaseLayer ? "checked" : ""}>
+      <label for="${safeId}">
+        <img src="${obj.img}" alt="${name}">
+        <span>${name}</span>
+      </label>
+    `;
+
+    grid.appendChild(item);
+
+    item.querySelector("input").addEventListener("change", () => {
+      if (currentBaseLayer) map.removeLayer(currentBaseLayer);
+      currentBaseLayer = obj.layer;
+      currentBaseLayer.addTo(map);
+      currentBaseLayer.bringToBack(); // Important pour voir les données par dessus
+    });
+  });
+
+  managerContent.appendChild(grid);
+}
+
 const overlaysTab = document.querySelector('[data-tab="overlays"]');
 const managerContent = document.getElementById("manager-content");
 
 function renderOverlays() {
-  managerContent.innerHTML = ""; // On vide le panneau
+  const managerContent = document.getElementById("manager-content");
+  managerContent.innerHTML = ""; // Nettoyage
 
-  // On crée d'abord la liste des couches
   Object.entries(overlays).forEach(([name, obj]) => {
     const label = document.createElement("label");
-    label.style.display = "block"; // Pour que ce soit l'un sous l'autre
+    label.classList.add("overlay-item"); // Utilise ta classe CSS flex
 
     let symbol =
       obj.type === "line"
@@ -209,12 +233,12 @@ function renderOverlays() {
         : `<span class="symbol polygon"></span>`;
 
     label.innerHTML = `
-      <input type="checkbox" checked>
-      ${symbol} ${name}
+      <input type="checkbox" ${map.hasLayer(obj.layer) ? "checked" : ""}>
+      ${symbol}
+      <span style="flex-grow: 1;">${name}</span>
     `;
 
     managerContent.appendChild(label);
-    map.addLayer(obj.layer);
 
     label.querySelector("input").addEventListener("change", (e) => {
       if (e.target.checked) {
@@ -225,76 +249,34 @@ function renderOverlays() {
     });
   });
 
-  // --- ICI : On ajoute le filtre UNE SEULE FOIS après la boucle ---
-  const separator = document.createElement("hr");
-  separator.style.margin = "15px 0";
-  managerContent.appendChild(separator);
+  // Séparateur
+  managerContent.appendChild(document.createElement("hr"));
 
+  // Ajout du filtre
   managerContent.appendChild(createSuperficieFilter());
 }
 
-// Fonction de rendu
-function renderBasemaps() {
-  managerContent.innerHTML = "";
-
-  const grid = document.createElement("div");
-  grid.classList.add("basemap-grid");
-
-  Object.entries(baseMaps).forEach(([name, obj], index) => {
-    const item = document.createElement("div");
-    item.classList.add("basemap-item");
-
-    // On vérifie si c'est la couche actuellement active pour cocher le radio
-    const isChecked = obj.layer === currentBaseLayer ? "checked" : "";
-
-    item.innerHTML = `
-  <input type="radio" name="basemap" id="bm-${index}" ${isChecked}>
-  <label for="bm-${index}">
-    <img src="${obj.img}" alt="${name}"> <span>${name}</span>
-  </label>
-`;
-
-    grid.appendChild(item);
-
-    const radio = item.querySelector("input");
-
-    radio.addEventListener("change", () => {
-      if (radio.checked) {
-        // Suppression de l'ancienne couche
-        if (currentBaseLayer) {
-          map.removeLayer(currentBaseLayer);
-        }
-
-        // Ajout de la nouvelle couche
-        currentBaseLayer = obj.layer;
-        map.addLayer(currentBaseLayer);
-      }
-    });
-  });
-
-  managerContent.appendChild(grid);
-}
-
-// ==========================================
-// ----------- GESTION DES ONGLETS ------------
-// ==========================================
+// --- GESTION DES ONGLETS ---
 document.querySelectorAll(".tab").forEach((tab) => {
   tab.addEventListener("click", () => {
+    // 1. Gérer l'apparence visuelle des onglets
     document
       .querySelectorAll(".tab")
       .forEach((t) => t.classList.remove("active"));
-
     tab.classList.add("active");
 
-    const type = tab.dataset.tab;
-
-    if (type === "overlays") {
+    // 2. Charger le bon contenu
+    if (tab.dataset.tab === "overlays") {
       renderOverlays();
     } else {
       renderBasemaps();
     }
   });
 });
+
+// --- INITIALISATION AU CHARGEMENT ---
+// On affiche les couches par défaut au démarrage
+renderOverlays();
 
 // GESTION  DES ONGLETS OUVERTURE / FERMETURE
 const manager = document.getElementById("layer-manager");
@@ -317,59 +299,61 @@ toggleBtn.addEventListener("click", () => {
 });
 
 // %%%%%%%%% POUR GENERER DYNAMIQUEMENT LES LISTES %%%%%%
-function buildLayerPanel() {
-  const basemapList = document.getElementById("basemaps-control");
-  const overlayList = document.getElementById("layers-control");
+// function buildLayerPanel() {
+//   const basemapList = document.getElementById("basemaps-control");
+//   const overlayList = document.getElementById("layers-control");
 
-  // Nettoyer avant génération
-  basemapList.innerHTML = "";
-  overlayList.innerHTML = "";
+// Nettoyer avant génération
+// basemapList.innerHTML = "";
+// overlayList.innerHTML = "";
 
-  // ========================
-  // FONDS DE CARTE (radio)
-  // ========================
-  Object.entries(baseMaps).forEach(([name, layer], index) => {
-    const label = document.createElement("label");
+// ========================
+// FONDS DE CARTE (radio)
+// ========================
+// Object.entries(baseMaps).forEach(([name, obj], index) => {
+//   const label = document.createElement("label");
 
-    label.innerHTML = `
-      <input type="radio" name="basemap" ${index === 0 ? "checked" : ""}>
-      ${name}
-    `;
+//   label.innerHTML = `
+//   <input type="radio" name="basemap" ${obj.layer === currentBaseLayer ? "checked" : ""}>
+//   ${name}
+// `;
 
-    basemapList.appendChild(label);
+//   basemapList.appendChild(label);
 
-    if (index === 0) map.addLayer(layer);
+//   label.querySelector("input").addEventListener("change", () => {
+//     if (currentBaseLayer) {
+//       map.removeLayer(currentBaseLayer);
+//     }
 
-    label.querySelector("input").addEventListener("change", () => {
-      Object.values(baseMaps).forEach((l) => map.removeLayer(l));
-      map.addLayer(layer);
-    });
-  });
+//     currentBaseLayer = obj.layer;
+//     map.addLayer(currentBaseLayer);
+//   });
+// });
 
-  // ========================
-  // COUCHES (checkbox)
-  // ========================
-  Object.entries(overlays).forEach(([name, layer]) => {
-    const label = document.createElement("label");
+// ========================
+// COUCHES (checkbox)
+// ========================
+//   Object.entries(overlays).forEach(([name, layer]) => {
+//     const label = document.createElement("label");
 
-    label.innerHTML = `
-      <input type="checkbox" checked>
-      ${name}
-    `;
+//     label.innerHTML = `
+//       <input type="checkbox" checked>
+//       ${name}
+//     `;
 
-    overlayList.appendChild(label);
+//     overlayList.appendChild(label);
 
-    map.addLayer(layer);
+//     map.addLayer(layer);
 
-    label.querySelector("input").addEventListener("change", (e) => {
-      if (e.target.checked) {
-        map.addLayer(layer);
-      } else {
-        map.removeLayer(layer);
-      }
-    });
-  });
-}
+//     label.querySelector("input").addEventListener("change", (e) => {
+//       if (e.target.checked) {
+//         map.addLayer(layer);
+//       } else {
+//         map.removeLayer(layer);
+//       }
+//     });
+//   });
+// }
 
 // %%%%%% Activer l’ouverture / fermeture au clic %%%%%%
 document.querySelectorAll(".control-header").forEach((header) => {
@@ -443,7 +427,7 @@ function highlightFeature(e) {
   const layer = e.target;
 
   // On vérifie si la couche est visible avant de surligner
-  if (layer.options.opacity === 0) return;
+  // if (layer.options.opacity === 0) return;
 
   layer.setStyle({
     fillColor: "#b4e9fd",
@@ -468,10 +452,14 @@ function wfsMapLayerDepartements() {
   )
     .then((res) => res.json())
     .then((data) => {
-      // 1. Création de la couche
+      const superficies = data.features.map(
+        (f) => f.properties.superficie || 0,
+      );
+      globalMaxSuperficie = Math.max(...superficies);
+
       departementsLayer = L.geoJSON(data, {
         style: styleDepartements,
-        onEachFeature: function (feature, layer) {
+        onEachFeature: (feature, layer) => {
           layer.on({
             mouseover: (e) => {
               highlightFeature(e);
@@ -486,22 +474,11 @@ function wfsMapLayerDepartements() {
       });
 
       groupeDepartements.addLayer(departementsLayer);
+      map.addLayer(groupeDepartements);
       map.fitBounds(departementsLayer.getBounds());
 
-      // 2. Calcul du MAX pour le Slider
-      let superficies = data.features.map((f) => f.properties.superficie);
-      let maxFound = Math.max(...superficies);
-
-      const slider = document.getElementById("sup-range");
-      const rangeMaxLabel = document.getElementById("range-max-label");
-      const rangeValue = document.getElementById("range-value");
-
-      if (slider) {
-        slider.max = maxFound;
-        slider.value = maxFound; // On commence avec tout affiché
-        rangeMaxLabel.innerText = Math.round(maxFound);
-        rangeValue.innerText = Math.round(maxFound);
-      }
+      // ⚡ Important : maintenant que le max est connu, on génère le filtre
+      renderOverlays();
     })
     .catch((err) => console.error("Erreur WFS :", err));
 }
@@ -556,26 +533,23 @@ function applySuperficieFilter(min, max) {
   if (!departementsLayer) return;
 
   departementsLayer.eachLayer((layer) => {
-    const sup = layer.feature.properties.superficie;
+    // ATTENTION : Vérifie bien que le nom dans ton GeoJSON est 'superficie'
+    const sup =
+      layer.feature.properties.superficie || layer.feature.properties.area || 0;
 
-    // On ajoute +1 au max pour pallier aux problèmes de précision des arrondis
-    if (sup >= min && sup <= max + 1) {
-      layer.setStyle({
-        fillOpacity: 1,
-        opacity: 1,
-        interactive: true,
-      });
+    if (sup >= min && sup <= max) {
+      // On remet le style normal si c'est dans la borne
+      layer.setStyle({ opacity: 1, fillOpacity: 1, stroke: true });
+      layer.options.interactive = true; // Permet de cliquer/survoler encore
     } else {
-      layer.setStyle({
-        fillOpacity: 0,
-        opacity: 0,
-        interactive: false,
-      });
+      // On cache complètement si c'est hors borne
+      layer.setStyle({ opacity: 0, fillOpacity: 0, stroke: false });
+      layer.options.interactive = false; // Désactive les popups/survols
     }
   });
 }
 
 // %%%%%%%%%% Appel des fonctions %%%%%%%%%%%
+renderBasemaps();
 wfsMapLayerLimit();
 wfsMapLayerDepartements();
-renderOverlays(); // affichage par défaut
