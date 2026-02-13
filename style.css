@@ -525,49 +525,36 @@ footer a:hover {
 }
 
 /* Filtre à partir des données de population */
+/* Style du bouton "Tout afficher" */
+#reset-sup-filter {
+  width: 100%;
+  background: #f0f0f0;
+  color: #555;
+  border: 1px solid #ccc;
+  padding: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  /* L'élégance demandée */
+  border-radius: 20px;
+  transition: all 0.3s ease;
+}
+
+#reset-sup-filter:hover {
+  background: #e0e0e0;
+  border-color: #bbb;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Style des bornes du slider */
+.range-bound {
+  font-size: 0.75rem;
+  color: #888;
+  font-weight: bold;
+}
+
+/* On s'assure que le conteneur de filtre est propre */
 .filter-container {
-  position: absolute;
-  top: 320px; /* ajuste si besoin */
-  left: 20px;
-  width: 260px;
-
-  padding: 12px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
-  font-size: 0.7rem;
-}
-
-.filter-container input {
-  width: 100%;
-  margin: 5px 0;
-  padding: 4px;
-  font-size: 0.7rem;
-}
-
-.filter-container button {
-  width: 100%;
-  padding: 6px;
-  margin-top: 8px;
-  background: #1f4e79;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-#reset-filter {
-  width: 100%;
-  padding: 6px;
-  margin-top: 6px;
-  background: #ccc;
-  color: #333;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-#reset-filter:hover {
-  background: #bbb;
+  padding: 15px;
+  background-color: #ffffff;
+  border-top: 1px solid #eee;
 }

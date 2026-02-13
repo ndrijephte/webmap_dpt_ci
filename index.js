@@ -118,31 +118,102 @@ const overlays = {
   },
 };
 
+// Cadre pour les filtres
+// function createSuperficieFilter() {
+//   const filterDiv = document.createElement("div");
+//   filterDiv.classList.add("filter-container");
+
+//   filterDiv.innerHTML = `
+//     <h4>Filtre Superficie</h4>
+//     <label>
+//       Min:
+//       <input type="number" id="sup-min" value="0">
+//     </label>
+//     <label>
+//       Max:
+//       <input type="number" id="sup-max">
+//     </label>
+//     <button id="apply-sup-filter">Appliquer</button>
+//     <button id="reset-sup-filter">Réinitialiser</button>
+//   `;
+
+//   return filterDiv;
+// }
+
+function createSuperficieFilter() {
+  const filterDiv = document.createElement("div");
+  filterDiv.classList.add("filter-container");
+
+  const maxInitial = 40000; // Valeur temporaire avant le chargement WFS
+
+  filterDiv.innerHTML = `
+    <h4>Filtrer par superficie</h4>
+    <div class="slider-wrapper" style="margin-bottom: 15px;">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+        <label>Superficie Max : <b id="range-value">${maxInitial}</b> ha</label>
+      </div>
+      
+      <div class="range-controls" style="display: flex; align-items: center; gap: 10px;">
+        <span class="range-bound">0</span>
+        <input type="range" id="sup-range" 
+               min="0" max="${maxInitial}" step="1" 
+               value="${maxInitial}" style="flex-grow: 1;">
+        <span class="range-bound" id="range-max-label">${maxInitial}</span>
+      </div>
+    </div>
+    
+    <div class="filter-actions">
+      <button id="reset-sup-filter" style="width: 100%; border-radius: 20px; padding: 8px; cursor: pointer; border: 1px solid #ccc; background: #f9f9f9;">
+        Tout afficher
+      </button>
+    </div>
+  `;
+
+  const slider = filterDiv.querySelector("#sup-range");
+  const display = filterDiv.querySelector("#range-value");
+
+  // Écouteur pour le slider
+  slider.addEventListener("input", (e) => {
+    const val = parseFloat(e.target.value);
+    display.innerText = Math.round(val);
+    applySuperficieFilter(0, val);
+  });
+
+  // %%% LA CORRECTION DU BOUTON ICI %%%
+  const resetBtn = filterDiv.querySelector("#reset-sup-filter");
+  resetBtn.addEventListener("click", () => {
+    const maxVal = parseFloat(slider.max);
+    slider.value = maxVal;
+    display.innerText = Math.round(maxVal);
+    applySuperficieFilter(0, maxVal);
+  });
+
+  return filterDiv;
+}
+
 // %%%%%%%%% GENERATION DYNAMIQUE DE CONTENU %%%%%%%%%%
+const overlaysTab = document.querySelector('[data-tab="overlays"]');
 const managerContent = document.getElementById("manager-content");
 
 function renderOverlays() {
-  managerContent.innerHTML = "";
+  managerContent.innerHTML = ""; // On vide le panneau
 
+  // On crée d'abord la liste des couches
   Object.entries(overlays).forEach(([name, obj]) => {
     const label = document.createElement("label");
+    label.style.display = "block"; // Pour que ce soit l'un sous l'autre
 
-    let symbol = "";
-
-    if (obj.type === "line") {
-      symbol = `<span class="symbol line"></span>`;
-    } else if (obj.type === "polygon") {
-      symbol = `<span class="symbol polygon"></span>`;
-    }
+    let symbol =
+      obj.type === "line"
+        ? `<span class="symbol line"></span>`
+        : `<span class="symbol polygon"></span>`;
 
     label.innerHTML = `
       <input type="checkbox" checked>
-      ${symbol}
-      ${name}
+      ${symbol} ${name}
     `;
 
     managerContent.appendChild(label);
-
     map.addLayer(obj.layer);
 
     label.querySelector("input").addEventListener("change", (e) => {
@@ -153,9 +224,16 @@ function renderOverlays() {
       }
     });
   });
+
+  // --- ICI : On ajoute le filtre UNE SEULE FOIS après la boucle ---
+  const separator = document.createElement("hr");
+  separator.style.margin = "15px 0";
+  managerContent.appendChild(separator);
+
+  managerContent.appendChild(createSuperficieFilter());
 }
 
-// 2. CORRECTION de la fonction de rendu
+// Fonction de rendu
 function renderBasemaps() {
   managerContent.innerHTML = "";
 
@@ -364,11 +442,12 @@ function styleDepartements(feature) {
 function highlightFeature(e) {
   const layer = e.target;
 
+  // On vérifie si la couche est visible avant de surligner
+  if (layer.options.opacity === 0) return;
+
   layer.setStyle({
-    fillColor: "#b4e9fd", // visible
+    fillColor: "#b4e9fd",
     fillOpacity: 1,
-    // color: "#000000",
-    // weight: 1,
   });
 
   layer.bringToFront();
@@ -389,21 +468,18 @@ function wfsMapLayerDepartements() {
   )
     .then((res) => res.json())
     .then((data) => {
+      // 1. Création de la couche
       departementsLayer = L.geoJSON(data, {
         style: styleDepartements,
-
         onEachFeature: function (feature, layer) {
           layer.on({
-            mouseover: function (e) {
+            mouseover: (e) => {
               highlightFeature(e);
               updateInfo(feature);
             },
-            mouseout: function (e) {
+            mouseout: (e) => {
               resetHighlight(e);
-              infoPanel.innerHTML = `
-      <h2>Informations</h2>
-      <p>Survolez un département</p>
-    `;
+              infoPanel.innerHTML = `<h2>Informations</h2><p>Survolez un département</p>`;
             },
           });
         },
@@ -412,8 +488,20 @@ function wfsMapLayerDepartements() {
       groupeDepartements.addLayer(departementsLayer);
       map.fitBounds(departementsLayer.getBounds());
 
-      // Appliquer filtre initial si besoin
-      applyPopulationFilter(0, Infinity);
+      // 2. Calcul du MAX pour le Slider
+      let superficies = data.features.map((f) => f.properties.superficie);
+      let maxFound = Math.max(...superficies);
+
+      const slider = document.getElementById("sup-range");
+      const rangeMaxLabel = document.getElementById("range-max-label");
+      const rangeValue = document.getElementById("range-value");
+
+      if (slider) {
+        slider.max = maxFound;
+        slider.value = maxFound; // On commence avec tout affiché
+        rangeMaxLabel.innerText = Math.round(maxFound);
+        rangeValue.innerText = Math.round(maxFound);
+      }
     })
     .catch((err) => console.error("Erreur WFS :", err));
 }
@@ -457,63 +545,33 @@ function updateInfo(feature) {
     <h2>${props.departement}</h2>
     <p><b>Région :</b> ${props.region}</p>
     <p><b>Population :</b> ${(props.population || 0).toLocaleString()}</p>
-    <p><b>Superficie :</b> ${(props.superficie * 0.0001).toFixed(3) || "N/A"} km²</p>
+    <p><b>Superficie :</b> ${(props.superficie * 0.01).toFixed(3) || "N/A"} km²</p>
     <p><b>Densité :</b> ${(props.population / props.superficie).toFixed(3) || "N/A"} hbts/km²</p>
   `;
 }
 
 // %%%%%%%%%% POUR FILTRER A PARTIR DES DONNES DE POPULATION %%%%%%%%%
 // Appliquer le filtre
-function applySuperficieFilter(min = 0, max = Infinity) {
-  if (!departementsLayer) return; // sécurité si WFS pas encore chargé
-
-  departementsLayer.setStyle(function (feature) {
-    const sup = feature.properties.superficie;
-
-    if (sup >= min && sup <= max) {
-      return styleDepartements(feature);
-    } else {
-      return {
-        fillOpacity: 0,
-        opacity: 0,
-      };
-    }
-  });
-}
-// Réinitialiser le filtre
-document.getElementById("reset-filter").addEventListener("click", () => {
-  // Réinitialiser les champs
-  document.getElementById("sup-min").value = 0;
-
-  let maxSuperficie = 0;
+function applySuperficieFilter(min, max) {
+  if (!departementsLayer) return;
 
   departementsLayer.eachLayer((layer) => {
     const sup = layer.feature.properties.superficie;
-    if (sup > maxSuperficie) {
-      maxSuperficie = sup;
+
+    // On ajoute +1 au max pour pallier aux problèmes de précision des arrondis
+    if (sup >= min && sup <= max + 1) {
+      layer.setStyle({
+        fillOpacity: 1,
+        opacity: 1,
+        interactive: true,
+      });
+    } else {
+      layer.setStyle({
+        fillOpacity: 0,
+        opacity: 0,
+        interactive: false,
+      });
     }
-  });
-  document.getElementById("sup-max").value = maxSuperficie;
-
-  // Réafficher toutes les entités
-  departementsLayer.eachLayer((layer) => {
-    layer.setStyle({
-      fillOpacity: 1,
-      opacity: 1,
-    });
-  });
-});
-
-const filterBtn = document.getElementById("apply-filter");
-
-if (filterBtn) {
-  filterBtn.addEventListener("click", () => {
-    if (!departementsLayer) return;
-
-    const min = parseInt(document.getElementById("sup-min").value) || 0;
-    const max = parseInt(document.getElementById("sup-max").value) || Infinity;
-
-    applySuperficieFilter(min, max);
   });
 }
 
